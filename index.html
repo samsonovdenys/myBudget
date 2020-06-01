@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <title>Мой бюджет</title>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <div class="header">
+                <div class="header__logo">
+                    <img src="img/sd1.jpg" alt="" />
+                </div>
+                <h1 class="header__title">BUDGET</h1>
+            </div>
+            <hr />
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <select name="years" id="years">
+                <option value=""></option>
+            </select>
+            <div class="values">
+                <div class="values__titles values-col">
+                    <h2>TITLES</h2>
+                    <h3>INSERISCI DATI</h3>
+                    <h3>ULTIMI VALORI</h3>
+                    <h3>VALORI MEDI</h3>
+                </div>
+                <div class="values__mese values-col">
+                    <h2>MESE</h2>
+                    <input type="number" id="mese-i-d" min="1" max="12" value="" />
+                    <input type="number" id="mese-u-v" min="1" max="12" value="" />
+                    <input type="number" id="mese-v-m" min="1" max="12" value="" />
+                </div>
+                <div class="values__anno values-col">
+                    <h2>ANNO</h2>
+                    <input type="number" id="anno-i-d" min="2010" max="2030" value="" />
+                    <input type="number" id="anno-u-v" min="2010" max="2030" value="" />
+                    <input type="number" id="anno-v-m" min="2010" max="2030" value="" />
+                </div>
+                <div class="values__saldo values-col">
+                    <h2>SALDO</h2>
+                    <input type="number" id="sald-i-d" value="" />
+                    <input type="number" id="sald-u-v" value="" />
+                    <input type="number" id="sald-v-m" value="" />
+                </div>
+                <div class="values__stipendio values-col">
+                    <h2>STIPENDIO</h2>
+                    <input type="number" id="stip-i-d" value="" />
+                    <input type="number" id="stip-u-v" value="" />
+                    <input type="number" id="stip-v-m" value="" />
+                </div>
+                <div class="values__spese values-col">
+                    <h2>SPESE</h2>
+                    <input type="number" id="spz-i-d" value="" />
+                    <input type="number" id="spz-u-v" value="" />
+                    <input type="number" id="spz-v-m" value="" />
+                </div>
+                <div class="values-col">
+                    <h2>SALVA/MODIF</h2>
+                    <button class="btn" onclick="onSave()">Salva</button>
+                    <button class="btn" onclick="onDel()">Elimina</button>
+                </div>
+            </div>
+            <hr />
+            <div class="lista">
+                <h2>DATA | SALDO | STIPENDIO | SPESE</h2>
+                <ul id="lista-dati"></ul>
+            </div>
+        </div>
+    </main>
+    <footer></footer>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

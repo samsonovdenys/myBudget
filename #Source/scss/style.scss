@@ -1,0 +1,55 @@
+@import "nullstyle.scss";
+body {
+  font-family: "Roboto", sans-serif;
+}
+.container {
+  max-width: 1260px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &__title {
+    font-size: 40px;
+    font-weight: 900;
+  }
+}
+
+hr {
+  width: 100%;
+  border: 1px solid grey;
+  margin: 30px auto;
+}
+input {
+  border: 1px solid black;
+  border-radius: 5px;
+  text-align: center;
+}
+.values {
+  max-width: 100%;
+  min-height: 120px;
+  display: flex;
+  justify-content: space-around;
+}
+.values-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+}
+h2 {
+  padding: 10px;
+  font-size: 18px;
+  font-weight: bold;
+}
+.btn {
+  background-color: green;
+  height: 30px;
+  border-radius: 3px;
+  &:hover {
+    background-color: lightgreen;
+  }
+}
