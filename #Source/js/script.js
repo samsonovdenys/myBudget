@@ -14,6 +14,7 @@ let months = [
     "Novembre",
     "Dicembre",
 ];
+
 let ul = document.querySelector("#lista-dati");
 
 //Функция удаления всех li из ul
@@ -21,19 +22,62 @@ function removelist() {
     let ulArr = document.querySelectorAll("#lista-dati li");
     ulArr.forEach((item) => item.remove());
 }
+//Функция загрузки всех select опций.
+function loadSelectOpt(years, selectedY) {
+    let select = document.querySelector("#years");
+    let optAll = document.createElement("option");
+    optAll.value = "all";
+    let optTextAll = document.createTextNode("ALL");
+    optAll.appendChild(optTextAll);
+    select.appendChild(optAll);
+    console.log(selectedY);
+    years.forEach((item) => {
+        if (item != selectedY || selectedY == undefined) {
+            
+            let opt = document.createElement("option");
+            opt.value = item;
+            let optText = document.createTextNode(item);
+            opt.appendChild(optText);
+            select.appendChild(opt);
+        }
+    });
+}
+//Функция выбора опции из select.
+function selectedYear() {
+    let ind = document.querySelector("#years").selectedIndex;
+    let selectedY = document.querySelector("#years")[ind].innerText;
 
+    removelist();
+    removeSelecOpt(selectedY);
+    loadlist(selectedY);
+}
+//Функция удаления опции из select.
+function removeSelecOpt(selectedY) {
+    let optArr = document.querySelectorAll("option");
+    optArr.forEach((item) => {
+        if (item.value != selectedY) {
+            item.remove();
+        }
+    });
+}
 //Функция загрузки списка из localStorage
-function loadlist() {
+function loadlist(selectedY) {
     let budgetObj = {};
+    let years;
     if (localStorage.getItem("budget")) {
         let budgetJSON = localStorage.getItem("budget");
         budgetObj = budgetJSON ? JSON.parse(budgetJSON) : {};
-
-        let years = Object.keys(budgetObj);
-
+        years = Object.keys(budgetObj);
+        let yearcount = years.length;
         let stringToLi;
-        for (let i = 0; i < years.length; i++) {
-            let year = years[i];
+        if (selectedY && selectedY != "ALL") {
+            yearcount = 1;
+        } else {
+            selectedY = undefined;
+        }
+
+        for (let i = 0; i < yearcount; i++) {
+            let year = selectedY || years[i];
             let months = Object.keys(budgetObj[year]);
             for (let i = 0; i < months.length; i++) {
                 let month = months[i];
@@ -46,12 +90,12 @@ function loadlist() {
                 ul.appendChild(li);
             }
         }
-
-        //Интеграция данных в DOM
     } else {
         localStorage.setItem("budget", "");
     }
+    loadSelectOpt(years, selectedY);
 }
+
 //Функция сохранения данных в localStorage
 function onSave() {
     //Input ANNO
