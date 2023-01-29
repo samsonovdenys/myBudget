@@ -1,7 +1,7 @@
 
 //срабатывает функция loadlist() при полной загрузки всех елементов страницы.
-document.addEventListener("DOMContentLoaded", (event) => loadlist());
-let months = [
+document.addEventListener("DOMContentLoaded", (event) => onLoad());
+let mesi = [
     "Gennaio",
     "Febbraio",
     "Marzo",
@@ -15,134 +15,260 @@ let months = [
     "Novembre",
     "Dicembre",
 ];
-
 let ul = document.querySelector("#lista-dati");
 
+//Функция загрузки списка из localStorage
+function onLoad() {
+    let budgetObject = getValuesFromStorage();
+    let allYears = Object.keys(budgetObject);
+    appendToList(allYears);
+    loadYearsOpt(allYears);
+    mediaYearValues(allYears);
+    loadchart(allYears);
+}
+//Создание Option Select years
+function loadYearsOpt(allYears) {
+    allYears = allYears || [];
+    let select = document.querySelector("#years");
+    allYears.forEach((item) => {
+        let opt = document.createElement("option");
+        let optText = document.createTextNode(item);
+        opt.appendChild(optText);
+        select.appendChild(opt);
+    });
+}
+//Функция выбора опции из select.
+function selectedYear() {
+    let selectedY = [];
+    let ind = document.querySelector("#years").selectedIndex;
+    selectedY.push(document.querySelector("#years")[ind].innerText);
+    removelist();
+    appendToList(selectedY);
+    mediaYearValues(selectedY);
+    loadchart(selectedY);
+}
+//Функция удаления опции из select.
+function removeYearOpt() {
+    let optArr = document.querySelectorAll("option");
+    optArr.forEach((item) => {
+        item.remove();
+    });
+}
+//Функция сохранения данных в localStorage
+function onSave() {
+    let budget = getValuesFromStorage();
+    let arrOfInputs = getValuesFromInput(); //anno,mese,values
+    let anno = arrOfInputs[0];
+    let mese = arrOfInputs[1];
+    let values = arrOfInputs[2];
+    let months = budget[anno] || [];
+    months[mese - 1] = values; //months[mese]=values
+    budget[anno] = months; //budget = {anno:months[mese]=values}
+    //Set ITEM to storage
+    localStorage.setItem("budget", JSON.stringify(budget));
+    removeYearOpt();
+    onLoad();
+}
+//Функция загрузки данных из localStorage
+function getValuesFromStorage() {
+    let budgetJSON = localStorage.getItem("budget")
+        ? localStorage.getItem("budget")
+        : "{}";
+    let budgetObj = JSON.parse(budgetJSON);
+    return budgetObj;
+}
+//Данные из инпутов
+function getValuesFromInput() {
+    let inputAnno = document.querySelector("#anno-i-d").value;
+    let inputMese = document.querySelector("#mese-i-d").value;
+    let inputSaldo = document.querySelector("#sald-i-d").value;
+    let inputStip = document.querySelector("#stip-i-d").value;
+    let inputSpese = document.querySelector("#spz-i-d").value;
+    let inputValues = new MonthValues(inputSaldo, inputStip, inputSpese);
+    let arrOfInputs = [inputAnno, inputMese, inputValues];
+    return arrOfInputs;
+}
+//Создание конструктора объекта MonthValues
+function MonthValues(saldo, stipendio, spese) {
+    this.saldo = saldo;
+    this.stipendio = stipendio;
+    this.spese = spese;
+}
+//Создание списка Ul из stringToLi
+function makeUl(selectedYearArr) {
+    let yearsArr = selectedYearArr;
+    let arrToReturn = [];
+    let budgetObject = getValuesFromStorage();
+    yearsArr.forEach(function (item) {
+        arrToReturn.push(item);
+        let allMonths = budgetObject[item];
+        allMonths.forEach(function (item, index, arr) {
+            if (item) {
+                let { saldo = 0, stipendio = 0, spese = 0 } = item;
+                let stringToLi = `${mesi[index]} saldo:${saldo} stipendio:${stipendio} spese:${spese}`;
+                arrToReturn.push(stringToLi);
+            }
+        });
+    });
+    return arrToReturn;
+}
+//Вывод данных в UL
+function appendToList(selectedYearArr) {
+    removelist();
+    let arrOfLi = makeUl(selectedYearArr) || [];
+    arrOfLi.forEach((item) => {
+        let liText = document.createTextNode(item);
+        let liEl = document.createElement("li");
+        liEl.appendChild(liText);
+        ul.appendChild(liEl);
+    });
+}
 //Функция удаления всех li из ul
 function removelist() {
     let ulArr = document.querySelectorAll("#lista-dati li");
     ulArr.forEach((item) => item.remove());
 }
-//Функция загрузки всех select опций.
-function loadSelectOpt(years, selectedY) {
-    let select = document.querySelector("#years");
-    let optAll = document.createElement("option");
-    optAll.value = "all";
-    let optTextAll = document.createTextNode("ALL");
-    optAll.appendChild(optTextAll);
-    select.appendChild(optAll);
-    console.log(selectedY);
-    years.forEach((item) => {
-        if (item != selectedY || selectedY == undefined) {
-            
-            let opt = document.createElement("option");
-            opt.value = item;
-            let optText = document.createTextNode(item);
-            opt.appendChild(optText);
-            select.appendChild(opt);
-        }
-    });
-}
-//Функция выбора опции из select.
-function selectedYear() {
-    let ind = document.querySelector("#years").selectedIndex;
-    let selectedY = document.querySelector("#years")[ind].innerText;
-
-    removelist();
-    removeSelecOpt(selectedY);
-    loadlist(selectedY);
-}
-//Функция удаления опции из select.
-function removeSelecOpt(selectedY) {
-    let optArr = document.querySelectorAll("option");
-    optArr.forEach((item) => {
-        if (item.value != selectedY) {
-            item.remove();
-        }
-    });
-}
-//Функция загрузки списка из localStorage
-function loadlist(selectedY) {
-    let budgetObj = {};
-    let years;
-    if (localStorage.getItem("budget")) {
-        let budgetJSON = localStorage.getItem("budget");
-        budgetObj = budgetJSON ? JSON.parse(budgetJSON) : {};
-        years = Object.keys(budgetObj);
-        let yearcount = years.length;
-        let stringToLi;
-        if (selectedY && selectedY != "ALL") {
-            yearcount = 1;
-        } else {
-            selectedY = undefined;
-        }
-
-        for (let i = 0; i < yearcount; i++) {
-            let year = selectedY || years[i];
-            let months = Object.keys(budgetObj[year]);
-            for (let i = 0; i < months.length; i++) {
-                let month = months[i];
-                let datas = Object.keys(budgetObj[year][month]);
-                let values = Object.values(budgetObj[year][month]);
-                stringToLi = `${year} ${month} ${datas[0]} ${values[0]} ${datas[1]} ${values[1]} ${datas[2]} ${values[2]}`;
-                let txt = document.createTextNode(`${stringToLi}`);
-                let li = document.createElement("li");
-                li.appendChild(txt);
-                ul.appendChild(li);
+function mediaYearValues(selectedYearArr) {
+    let saldoSum = 0;
+    let stipSum = 0;
+    let speseSum = 0;
+    let yearLength = 0;
+    let budgetObject = getValuesFromStorage();
+    selectedYearArr.forEach(function (item) {
+        let allMonths = budgetObject[item];
+        yearLength += allMonths.length;
+        allMonths.forEach(function (item) {
+            if (item) {
+                let { saldo = 0, stipendio = 0, spese = 0 } = item;
+                saldoSum += +saldo;
+                stipSum += +stipendio;
+                speseSum += +spese;
             }
-        }
-    } else {
-        localStorage.setItem("budget", "");
-    }
-    loadSelectOpt(years, selectedY);
+        });
+    });
+    let saldoMedio = saldoSum / yearLength;
+    let stipMedio = stipSum / yearLength;
+    let speseMedio = speseSum / yearLength;
+    insertMediumValues(saldoMedio, stipMedio, speseMedio);
 }
-
-//Функция сохранения данных в localStorage
-function onSave() {
-    //Input ANNO
-    let annoInp = document.querySelector("#anno-i-d").value,
-        //Input MESE
-        meseInp = document.querySelector("#mese-i-d").value;
-    //Input dati
-    let datiMeseObj = {
-        saldo: document.querySelector("#sald-i-d").value,
-        stipendio: document.querySelector("#stip-i-d").value,
-        spese: document.querySelector("#spz-i-d").value,
-    };
-    //Creazione del object dell'mese dall'input
-    let mesiObj = {
-        [meseInp]: datiMeseObj,
-    };
-    //Creazione dell object dell'anno  dall'input
-    let anniObj = {
-        [annoInp]: mesiObj,
-    };
-    //Get "BUDGET" from storage
-    let budgetJSON = localStorage.getItem("budget");
-    //Se non c'e, stringify object dell'anno dall'input
-    if (budgetJSON == "") {
-        localStorage.setItem("budget", JSON.stringify(anniObj));
+function insertMediumValues(a, b, c) {
+    document.querySelector("#sald-v-m").value = Math.round(a);
+    document.querySelector("#stip-v-m").value = Math.round(b);
+    document.querySelector("#spz-v-m").value = Math.round(c);
+}
+function uploadInputs() {
+    let budgetObject = getValuesFromStorage();
+    let inputAnno = document.querySelector("#anno-i-d").value;
+    let inputMese = document.querySelector("#mese-i-d").value - 1;
+    if (budgetObject[inputAnno][inputMese]) {
+        document.querySelector("#sald-i-d").value =
+            budgetObject[inputAnno][inputMese].saldo;
+        document.querySelector("#stip-i-d").value =
+            budgetObject[inputAnno][inputMese].stipendio;
+        document.querySelector("#spz-i-d").value =
+            budgetObject[inputAnno][inputMese].spese;
     } else {
-        //Se c'e, allora parse object from storage
-        let budgetObj = JSON.parse(budgetJSON);
-        //Se non c'e anno ,inserisci anno dall'input e dati del input
-        if (budgetObj[annoInp] == undefined) {
-            budgetObj[annoInp] = mesiObj;
-            //Altrimenti inserisci dati nell'anno dal input
-        } else {
-            budgetObj[annoInp][meseInp] = datiMeseObj;
-        }
-        //Set ITEM to storage
-        localStorage.setItem("budget", JSON.stringify(budgetObj));
+        document.querySelector("#sald-i-d").value = 0;
+        document.querySelector("#stip-i-d").value = 0;
+        document.querySelector("#spz-i-d").value = 0;
+    }
+}
+function loadchart(allYears) {
+    let budgetObject = getValuesFromStorage();
+    let months = mesi;
+    let allMonths = [];
+
+    for (let i = 0; i < allYears.length; i++) {
+        months.splice(0, 1, ["gennaio", allYears[i]]);
+        allMonths = allMonths.concat(months);
     }
 
-    removelist();
-    loadlist();
-}
-function onDel() {
-    let anno = document.querySelector("#anno-i-d").value;
-    localStorage.removeItem(anno);
+    let saldoData = [];
+    let stipData = [];
+    let speseData = [];
 
-    removelist();
-    loadlist();
+    if (allYears.length == 1) {
+        budgetObject[allYears[0]].forEach((item) => {
+            saldoData.push(item.saldo);
+            stipData.push(item.stipendio);
+            speseData.push(item.spese);
+        });
+    } else {
+        for (let key in budgetObject) {
+            budgetObject[key].forEach((item) => {
+                saldoData.push(item.saldo);
+                console.log(item);
+                stipData.push(item.stipendio);
+                speseData.push(item.spese);
+            });
+        }
+    }
+
+    var ctx = document.getElementById("myChart").getContext("2d");
+    if (window.bar != undefined) {
+        window.bar.destroy();
+    }
+
+    window.bar = new Chart(ctx, {
+        // The type of chart we want to create
+        type: "line",
+
+        // The data for our dataset
+        data: {
+            labels: allMonths,
+            datasets: [
+                {
+                    label: "saldo",
+                    borderColor: "rgb(121, 143, 224)",
+                    data: saldoData,
+                },
+                {
+                    label: "stipendio",
+                    borderColor: "rgb(84, 191, 96)",
+                    data: stipData,
+                },
+                {
+                    label: "spesa",
+                    borderColor: "rgb(226, 122, 122)",
+                    data: speseData,
+                },
+            ],
+        },
+
+        // Configuration options go here
+        options: {},
+        
+    }
+    );
+
+    var ctxx = document.getElementById("myChart2").getContext("2d");
+    var a = new Chart(ctxx, {
+        // The type of chart we want to create
+        type: "bar",
+
+        // The data for our dataset
+        data: {
+            labels: [2016,2017,2018,2019,2020,2021],
+            datasets: [
+                {
+                    label: "saldo",
+                    data: [7109,5643,7378,5017,977],
+                    backgroundColor: "rgb(121, 143, 224)",
+                },
+                {
+                    label: "stipendio",
+                    data: [1334,1549,1570,1358,1765],
+                    backgroundColor: "rgb(84, 191, 96)",
+                },
+                {
+                    label: "spesa",
+                    data: [1083,1510,1664,1426,1352],
+                    backgroundColor: "rgb(226, 122, 122)",
+                },
+            ],
+        },
+
+        // Configuration options go here
+        options: {},
+    });
 }
